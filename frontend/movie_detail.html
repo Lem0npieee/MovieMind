@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电影详情 - MovieMind</title>
+    <link rel="stylesheet" href="css/detail.css">
+</head>
+<body>
+    <header class="detail-navbar">
+        <div class="nav-content">
+            <a href="index.html" class="brand">🎬 MovieMind</a>
+            <nav class="nav-actions">
+                <a href="index.html" class="back-link">返回首页</a>
+                <a href="index.html#page-home" class="link-muted">电影榜单</a>
+                <a href="index.html#page-search" class="link-muted">智能搜索</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="detail-main">
+        <section class="hero-panel" id="hero-panel">
+            <div class="poster-wrapper placeholder">
+                <img id="movie-poster" alt="电影海报" loading="lazy">
+                <div class="poster-fallback" id="poster-fallback">暂无海报</div>
+            </div>
+            <div class="hero-content">
+                <div class="title-group">
+                    <div class="movie-rank" id="movie-rank"></div>
+                    <h1 id="movie-title" class="movie-title">加载中...</h1>
+                    <p id="movie-original-title" class="movie-subtitle"></p>
+                </div>
+                <div class="meta-group">
+                    <div class="meta-item">
+                        <span class="meta-label">豆瓣评分</span>
+                        <div class="rating">
+                            <span class="rating-score" id="movie-rating">--</span>
+                            <span class="rating-count" id="movie-rating-count"></span>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">年份</span>
+                        <p id="movie-year">--</p>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">片长</span>
+                        <p id="movie-duration">--</p>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">语言</span>
+                        <p id="movie-language">--</p>
+                    </div>
+                </div>
+                <div class="tag-group" id="movie-tags"></div>
+                <ul class="info-list">
+                    <li><span>国家/地区</span><p id="movie-countries">--</p></li>
+                    <li><span>类型</span><p id="movie-genres">--</p></li>
+                    <li><span>导演</span><p id="movie-directors">--</p></li>
+                    <li><span>主演</span><p id="movie-actors">--</p></li>
+                    <li><span>上映日期</span><p id="movie-release">--</p></li>
+                </ul>
+                <div class="hero-actions">
+                    <a id="douban-link" class="btn primary" target="_blank" rel="noopener">前往豆瓣</a>
+                    <a href="index.html" class="btn ghost">返回 MovieMind</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" id="intro-panel">
+            <div class="panel-header">
+                <h2>剧情简介</h2>
+            </div>
+            <div class="panel-body">
+                <p id="movie-intro" class="intro-text">正在为您加载剧情简介...</p>
+            </div>
+        </section>
+
+        <section class="panel" id="cast-panel">
+            <div class="panel-header">
+                <h2>演职人员</h2>
+                <p class="panel-subtitle">主要导演与演员</p>
+            </div>
+            <div class="cast-grid" id="cast-grid">
+                <!-- 动态填充 -->
+            </div>
+        </section>
+
+        <section class="panel" id="reviews-panel">
+            <div class="panel-header reviews-header">
+                <div>
+                    <h2>观众评论</h2>
+                    <p class="panel-subtitle" id="review-count">正在加载评论...</p>
+                </div>
+            </div>
+            <div class="review-form" id="review-form-wrapper">
+                <div class="review-form-header">
+                    <strong>发表你的观后感</strong>
+                    <span id="review-form-notice">登录后即可发表评论</span>
+                </div>
+                <form id="review-form">
+                    <div class="review-form-fields rating-field">
+                        <label>评分（0~5星）</label>
+                        <div class="rating-stars" id="review-stars" aria-label="评分" role="radiogroup">
+                            <button type="button" class="rating-star-btn" data-value="1" aria-label="1 星">★</button>
+                            <button type="button" class="rating-star-btn" data-value="2" aria-label="2 星">★</button>
+                            <button type="button" class="rating-star-btn" data-value="3" aria-label="3 星">★</button>
+                            <button type="button" class="rating-star-btn" data-value="4" aria-label="4 星">★</button>
+                            <button type="button" class="rating-star-btn" data-value="5" aria-label="5 星">★</button>
+                        </div>
+                        <div class="rating-hint" id="review-rating-text">当前：0 星</div>
+                        <input type="hidden" id="review-rating" value="0">
+                    </div>
+                    <div class="review-form-fields">
+                        <label for="review-content">评论内容</label>
+                        <textarea id="review-content" rows="3" placeholder="写下你的看法或名场面..." maxlength="500"></textarea>
+                    </div>
+                    <div class="review-form-actions">
+                        <button type="submit" class="btn primary" id="review-submit">发布评论</button>
+                    </div>
+                </form>
+                <p class="review-message" id="review-message"></p>
+            </div>
+
+            <ul class="review-list" id="review-list"></ul>
+            <div class="empty-state" id="review-empty">暂无评论，快来抢第一条吧！</div>
+        </section>
+    </main>
+
+    <div class="page-loading" id="page-loading">
+        <div class="spinner"></div>
+        <p>正在加载电影信息...</p>
+    </div>
+
+    <script src="js/detail.js"></script>
+</body>
+</html>

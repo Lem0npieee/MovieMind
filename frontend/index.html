@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieMind - 豆瓣 Top 250 电影智能检索</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🎬 MovieMind</h1>
+                <p class="tagline">发现经典 · 智能推荐</p>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active" data-page="home">首页</a>
+                <a href="#" class="nav-link" data-page="search">智能搜索</a>
+                <a href="#" class="nav-link" data-page="stats">数据可视化</a>
+                <a href="#" class="nav-link" data-page="auth">账户</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 首页 - 电影榜单 -->
+        <section id="page-home" class="page-section active">
+            <div class="container">
+                <!-- 筛选栏 -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>类型:</label>
+                        <select id="filter-genre">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>年代:</label>
+                        <select id="filter-year">
+                            <option value="">全部</option>
+                            <option value="2020-2025">2020年代</option>
+                            <option value="2010-2019">2010年代</option>
+                            <option value="2000-2009">2000年代</option>
+                            <option value="1990-1999">1990年代</option>
+                            <option value="1980-1989">1980年代</option>
+                            <option value="1970-1979">1970年代</option>
+                            <option value="1900-1969">更早</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>评分:</label>
+                        <select id="filter-rating">
+                            <option value="">全部</option>
+                            <option value="9.5">9.5分以上</option>
+                            <option value="9.0">9.0分以上</option>
+                            <option value="8.5">8.5分以上</option>
+                            <option value="8.0">8.0分以上</option>
+                        </select>
+                    </div>
+                    <button id="btn-filter" class="btn btn-primary">筛选</button>
+                    <button id="btn-reset" class="btn btn-secondary">重置</button>
+                </div>
+
+                <!-- 搜索栏 -->
+                <div class="search-bar">
+                    <input type="text" id="keyword-search" placeholder="搜索电影、导演、演员...">
+                    <button id="btn-keyword-search" class="btn btn-primary">搜索</button>
+                </div>
+
+                <!-- 电影网格 -->
+                <div id="movies-grid" class="movies-grid">
+                    <!-- 动态加载电影卡片 -->
+                </div>
+
+                <!-- 分页 -->
+                <div id="pagination" class="pagination">
+                    <!-- 动态加载分页按钮 -->
+                </div>
+
+                <!-- 加载动画 -->
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI 智能搜索页 -->
+        <section id="page-search" class="page-section">
+            <div class="container">
+                <div class="ai-search-container">
+                    <h2>🤖 AI 智能选片助手</h2>
+                    <p class="subtitle">告诉我你的心情或需求，我会从 Top 250 中为你推荐最合适的电影</p>
+                    
+                    <div class="ai-input-area">
+                        <textarea id="ai-query" placeholder="例如：推荐一部适合失恋看的、结局治愈的电影，不要太老的片子&#10;或者：我想看节奏紧凑的犯罪悬疑片，最好是90年代的&#10;或者：有哪些关于人生意义的哲学电影？"></textarea>
+                        <button id="btn-ai-search" class="btn btn-primary btn-large">开始推荐</button>
+                    </div>
+
+                    <!-- 示例查询 -->
+                    <div class="example-queries">
+                        <p>试试这些:</p>
+                        <button class="example-btn">适合深夜一个人看的电影</button>
+                        <button class="example-btn">励志治愈的动画片</button>
+                        <button class="example-btn">经典黑帮犯罪片</button>
+                        <button class="example-btn">高分科幻烧脑电影</button>
+                    </div>
+
+                    <!-- AI 回复区域 -->
+                    <div id="ai-result" class="ai-result" style="display: none;">
+                        <h3>推荐结果</h3>
+                        <div id="ai-interpretation" class="ai-interpretation"></div>
+                        <div id="ai-movies" class="movies-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据可视化页 -->
+        <section id="page-stats" class="page-section">
+            <div class="container">
+                <h2>📊 Top 250 数据洞察</h2>
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h3>年代分布</h3>
+                        <canvas id="chart-year"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>类型分布</h3>
+                        <canvas id="chart-genre"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>评分分布</h3>
+                        <canvas id="chart-rating"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 账户中心 -->
+        <section id="page-auth" class="page-section">
+            <div class="container auth-container">
+                <h2>👤 账户中心</h2>
+                <p id="auth-status-text" class="auth-status-text">请先登录或注册以保存个性化数据</p>
+                <div class="auth-actions">
+                    <button id="btn-logout" class="btn btn-secondary" style="display: none;">退出登录</button>
+                </div>
+                <div id="auth-message" class="auth-message" style="display: none;"></div>
+                <div class="auth-grid">
+                    <div class="auth-card">
+                        <h3>注册新账号</h3>
+                        <p class="auth-tip">注册后即可参与评论互动，收藏喜欢的电影</p>
+                        <form id="register-form">
+                            <div class="form-group">
+                                <label for="register-username">用户名</label>
+                                <input type="text" id="register-username" required maxlength="100" placeholder="请输入用户名">
+                            </div>
+                            <div class="form-group">
+                                <label for="register-email">邮箱</label>
+                                <input type="email" id="register-email" required placeholder="请输入邮箱">
+                            </div>
+                            <div class="form-group">
+                                <label for="register-password">密码</label>
+                                <input type="password" id="register-password" required minlength="6" placeholder="至少 6 位字符">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">注册账号</button>
+                        </form>
+                    </div>
+                    <div class="auth-card">
+                        <h3>已有账号登录</h3>
+                        <p class="auth-tip">登录后可同步浏览历史和个性化推荐</p>
+                        <form id="login-form">
+                            <div class="form-group">
+                                <label for="login-username">用户名</label>
+                                <input type="text" id="login-username" required placeholder="请输入用户名">
+                            </div>
+                            <div class="form-group">
+                                <label for="login-password">密码</label>
+                                <input type="password" id="login-password" required placeholder="请输入密码">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">登录</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 电影详情模态框 -->
+    <div id="movie-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="movie-detail">
+                <!-- 动态加载电影详情 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- 主 JS 文件 -->
+    <script src="js/app.js"></script>
+</body>
+</html>

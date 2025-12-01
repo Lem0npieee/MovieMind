@@ -1,0 +1,9 @@
+opengauss用户名：omm
+nvicat用户名：dzr
+密码：OpenGauss@2025
+打开docker终端后：
+su - omm
+gsql -d template1 -U omm -p 5432
+
+如果已经create table moviemind; 了：
+gsql -d moviemind -U omm -p 5432
