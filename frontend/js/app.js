@@ -5,6 +5,7 @@
 // API 基础 URL
 const API_BASE_URL = 'http://localhost:5000/api';
 const AUTH_STORAGE_KEY = 'moviemind_user';
+const THEME_STORAGE_KEY = 'moviemind_theme';
 
 // 当前状态
 let currentPage = 1;
@@ -15,6 +16,7 @@ let currentUser = null;
  * 初始化应用
  */
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     initNavigation();
     initFilters();
     initSearch();
@@ -23,6 +25,51 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMovies();
     loadGenres();
 });
+
+/**
+ * 主题切换功能
+ */
+function initTheme() {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+    applyTheme(savedTheme);
+
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+            
+            toggleBtn.style.transform = 'scale(0.9) rotate(180deg)';
+            setTimeout(() => {
+                toggleBtn.style.transform = '';
+            }, 300);
+        });
+    }
+}
+
+/**
+ * 应用主题
+ */
+function applyTheme(theme) {
+    const root = document.documentElement;
+    const toggleBtn = document.getElementById('theme-toggle');
+    
+    if (theme === 'light') {
+        root.setAttribute('data-theme', 'light');
+        if (toggleBtn) {
+            toggleBtn.querySelector('.icon').textContent = '☀️';
+            toggleBtn.setAttribute('data-tooltip', '切换到迷影模式');
+        }
+    } else {
+        root.removeAttribute('data-theme');
+        if (toggleBtn) {
+            toggleBtn.querySelector('.icon').textContent = '🌙';
+            toggleBtn.setAttribute('data-tooltip', '切换到明亮模式');
+        }
+    }
+}
 
 /**
  * 导航功能

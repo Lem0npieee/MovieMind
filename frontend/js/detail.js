@@ -1,6 +1,7 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 const PLACEHOLDER_POSTER = 'https://via.placeholder.com/240x360?text=No+Image';
 const AUTH_STORAGE_KEY = 'moviemind_user';
+const THEME_STORAGE_KEY = 'moviemind_theme';
 
 let currentUser = null;
 let reviewsData = [];
@@ -27,6 +28,9 @@ const reviewSubmitBtn = document.getElementById('review-submit');
 const ratingStars = document.querySelectorAll('.rating-star-btn');
 const ratingHint = document.getElementById('review-rating-text');
 const ratingStarsGroup = document.getElementById('review-stars');
+
+// 初始化主题
+initTheme();
 
 if (!movieId) {
     showError('缺少电影 ID，请从首页选择电影进入详情页。');
@@ -422,4 +426,32 @@ function renderStarIcons(value) {
         html += `<span class="star-icon ${activeClass}">★</span>`;
     }
     return html;
+}
+
+// ========== 主题切换功能 ==========
+function initTheme() {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+    applyTheme(savedTheme);
+    
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+        });
+    }
+}
+
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        const icon = document.querySelector('#theme-toggle .icon');
+        if (icon) icon.textContent = '☀️';
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+        const icon = document.querySelector('#theme-toggle .icon');
+        if (icon) icon.textContent = '🌙';
+    }
 }
