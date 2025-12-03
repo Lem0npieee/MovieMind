@@ -85,8 +85,21 @@
                 <h2>演职人员</h2>
                 <p class="panel-subtitle">主要导演与演员</p>
             </div>
-            <div class="cast-grid" id="cast-grid">
-                <!-- 动态填充 -->
+            <div class="cast-carousel-container">
+                <button class="carousel-btn prev-btn" id="cast-prev-btn" aria-label="上一页">
+                    <span>‹</span>
+                </button>
+                <div class="cast-grid-wrapper">
+                    <div class="cast-grid" id="cast-grid">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+                <button class="carousel-btn next-btn" id="cast-next-btn" aria-label="下一页">
+                    <span>›</span>
+                </button>
+            </div>
+            <div class="cast-pagination" id="cast-pagination">
+                <span class="page-indicator" id="cast-page-indicator">1 / 1</span>
             </div>
         </section>
 

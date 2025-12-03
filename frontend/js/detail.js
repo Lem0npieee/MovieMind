@@ -29,6 +29,11 @@ const ratingStars = document.querySelectorAll('.rating-star-btn');
 const ratingHint = document.getElementById('review-rating-text');
 const ratingStarsGroup = document.getElementById('review-stars');
 
+// 演员轮播相关变量
+let allCastMembers = [];
+let currentCastPage = 0;
+const ITEMS_PER_PAGE = 8; // 每页显示 8 个（2行 x 4列）
+
 // 初始化主题
 initTheme();
 
@@ -122,34 +127,107 @@ function renderPoster(url, title) {
 }
 
 function renderCast(directors, actors) {
-    castGrid.innerHTML = '';
-    const items = [];
+    // 收集所有演职人员（最多50位演员）
+    allCastMembers = [];
 
-    directors.slice(0, 2).forEach(name => {
-        items.push({ name, role: '导演' });
+    directors.slice(0, 3).forEach(name => {
+        allCastMembers.push({ name, role: '导演' });
     });
-    actors.slice(0, 6).forEach(name => {
-        items.push({ name, role: '主演' });
+    actors.slice(0, 100).forEach(name => {
+        allCastMembers.push({ name, role: '主演' });
     });
 
-    if (!items.length) {
-        const empty = document.createElement('p');
-        empty.className = 'panel-subtitle';
-        empty.textContent = '暂无演职人员信息';
-        castGrid.appendChild(empty);
+    if (!allCastMembers.length) {
+        castGrid.innerHTML = '<p class="panel-subtitle" style="grid-column: 1/-1;">暂无演职人员信息</p>';
         return;
     }
 
-    items.forEach((person) => {
+    // 重置到第一页
+    currentCastPage = 0;
+    renderCastPage();
+    setupCastNavigation();
+}
+
+function renderCastPage() {
+    castGrid.innerHTML = '';
+    
+    const startIdx = currentCastPage * ITEMS_PER_PAGE;
+    const endIdx = Math.min(startIdx + ITEMS_PER_PAGE, allCastMembers.length);
+    const pageItems = allCastMembers.slice(startIdx, endIdx);
+
+    pageItems.forEach((person) => {
         const card = document.createElement('div');
         card.className = 'cast-card';
+        
+        const encodedName = encodeURIComponent(person.name);
+        
+        // 根据角色选择头像
+        const avatarSrc = person.role === '导演' ? 'assets/director-avatar.svg' : 'assets/default-avatar.svg';
+        
         card.innerHTML = `
-            <div class="cast-avatar">${getInitials(person.name)}</div>
-            <div class="cast-name">${person.name}</div>
+            <div class="cast-avatar">
+                <img src="${avatarSrc}" alt="${person.name}" />
+            </div>
+            <div class="cast-name">
+                <a href="celebrity.html?name=${encodedName}" 
+                   class="celebrity-link" 
+                   style="color: inherit; text-decoration: none; transition: color 0.3s ease;"
+                   onmouseover="this.style.color='var(--primary-color)'"
+                   onmouseout="this.style.color='inherit'">
+                    ${person.name}
+                </a>
+            </div>
             <div class="cast-role">${person.role}</div>
         `;
         castGrid.appendChild(card);
     });
+
+    updateCastNavigation();
+}
+
+function setupCastNavigation() {
+    const prevBtn = document.getElementById('cast-prev-btn');
+    const nextBtn = document.getElementById('cast-next-btn');
+
+    if (prevBtn) {
+        prevBtn.onclick = () => {
+            if (currentCastPage > 0) {
+                currentCastPage--;
+                renderCastPage();
+            }
+        };
+    }
+
+    if (nextBtn) {
+        nextBtn.onclick = () => {
+            const totalPages = Math.ceil(allCastMembers.length / ITEMS_PER_PAGE);
+            if (currentCastPage < totalPages - 1) {
+                currentCastPage++;
+                renderCastPage();
+            }
+        };
+    }
+}
+
+function updateCastNavigation() {
+    const prevBtn = document.getElementById('cast-prev-btn');
+    const nextBtn = document.getElementById('cast-next-btn');
+    const pageIndicator = document.getElementById('cast-page-indicator');
+    
+    const totalPages = Math.ceil(allCastMembers.length / ITEMS_PER_PAGE);
+    const currentPageNum = currentCastPage + 1;
+
+    if (pageIndicator) {
+        pageIndicator.textContent = `${currentPageNum} / ${totalPages}`;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = currentCastPage === 0;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = currentCastPage >= totalPages - 1;
+    }
 }
 
 function updateLinks(movie) {

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>影人详情 - MovieMind</title>
+    <link rel="stylesheet" href="css/detail.css">
+    <style>
+        .celebrity-hero {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            border-radius: 1rem;
+        }
+
+        .celebrity-info {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 0 2rem;
+        }
+
+        .celebrity-name {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .celebrity-roles {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .celebrity-stats {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+
+        .works-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .works-category {
+            margin-bottom: 4rem;
+        }
+
+        .works-category h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+
+        .works-category h2 .count {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: normal;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 1.5rem;
+            }
+        }
+
+        .movie-card {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+        }
+
+        .movie-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-color);
+        }
+
+        .movie-card:hover::before {
+            opacity: 1;
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: var(--bg-secondary);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: block;
+        }
+
+        .movie-card:hover .movie-poster {
+            transform: scale(1.08);
+        }
+
+        .movie-info {
+            padding: 1.2rem;
+            background: var(--card-bg);
+            position: relative;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .movie-rank {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), #45c586);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            box-shadow: 0 2px 8px rgba(0,184,148,0.3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movie-rank::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            animation: rankShine 3s infinite;
+        }
+
+        @keyframes rankShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .movie-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            display: -webkit-box;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: var(--text-color);
+            line-height: 1.4;
+            min-height: 2.8rem;
+            transition: color 0.3s;
+        }
+
+        .movie-card:hover .movie-title {
+            color: var(--primary-color);
+        }
+
+        .movie-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .movie-year {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .movie-year::before {
+            content: '📅';
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .movie-rating {
+            background: linear-gradient(135deg, #ffd32a, #ff8f00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .movie-rating::before {
+            content: "⭐";
+            -webkit-text-fill-color: #ffd32a;
+            filter: drop-shadow(0 0 3px rgba(255, 211, 42, 0.6));
+            font-size: 1.1rem;
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--bg-secondary);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .celebrity-name {
+                font-size: 2.5rem;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 1rem;
+            }
+
+            .works-category h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="detail-navbar">
+        <div class="nav-content">
+            <a href="index.html" class="brand">🎬 MovieMind</a>
+            <nav class="nav-actions">
+                <a href="javascript:history.back()" class="back-link">返回上一页</a>
+                <a href="index.html" class="link-muted">返回首页</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主题切换按钮 -->
+    <button class="theme-toggle" id="theme-toggle" aria-label="切换主题">
+        <span class="icon">🌓</span>
+    </button>
+
+    <main class="detail-main">
+        <!-- 加载状态 -->
+        <div id="loading-container" class="loading-container">
+            <div class="spinner"></div>
+            <p>加载影人信息中...</p>
+        </div>
+
+        <!-- 影人信息区 -->
+        <section id="celebrity-hero" class="celebrity-hero" style="display: none;">
+            <div class="celebrity-info">
+                <h1 class="celebrity-name" id="celebrity-name">加载中...</h1>
+                <p class="celebrity-roles" id="celebrity-roles"></p>
+                <p class="celebrity-stats" id="celebrity-stats"></p>
+            </div>
+        </section>
+
+        <!-- 作品列表区 -->
+        <div id="works-container" class="works-section" style="display: none;">
+            <!-- 作为导演的作品 -->
+            <div id="director-works" class="works-category" style="display: none;">
+                <h2>作为导演 <span class="count" id="director-count"></span></h2>
+                <div id="director-movies-grid" class="movies-grid"></div>
+            </div>
+
+            <!-- 作为演员的作品 -->
+            <div id="actor-works" class="works-category" style="display: none;">
+                <h2>作为演员 <span class="count" id="actor-count"></span></h2>
+                <div id="actor-movies-grid" class="movies-grid"></div>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="icon">🎬</div>
+            <h2>未找到相关信息</h2>
+            <p id="error-message">该影人在豆瓣 Top 250 中暂无作品</p>
+            <br>
+            <a href="index.html" class="btn primary">返回首页</a>
+        </div>
+    </main>
+
+    <script src="js/celebrity.js"></script>
+</body>
+</html>

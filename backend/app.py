@@ -293,6 +293,28 @@ def get_statistics():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/celebrities/<path:name>', methods=['GET'])
+def get_celebrity_detail(name):
+    """获取影人详情及其参与的所有电影"""
+    try:
+        from urllib.parse import unquote
+        # URL 解码中文名字
+        decoded_name = unquote(name)
+        
+        if not decoded_name:
+            return jsonify({'success': False, 'error': '请提供影人姓名'}), 400
+        
+        celebrity = db_manager.get_celebrity_by_name(decoded_name)
+        
+        if not celebrity:
+            return jsonify({'success': False, 'error': f'未找到影人 "{decoded_name}" 的相关信息'}), 404
+        
+        return jsonify({'success': True, 'data': celebrity})
+    except Exception as e:
+        logger.error(f"获取影人详情失败: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'success': False, 'error': '资源不存在'}), 404

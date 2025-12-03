@@ -680,3 +680,105 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"执行AI SQL失败: {str(e)}\nSQL: {sql_query}")
             return []
+    
+    def get_celebrity_by_name(self, name: str) -> Optional[Dict]:
+        """
+        根据影人姓名获取其所有作品信息
+        :param name: 影人姓名
+        :return: 包含该影人作为导演和演员的所有作品
+        """
+        if not name or not name.strip():
+            return None
+        
+        name = name.strip()
+        result = {
+            'name': name,
+            'roles': [],
+            'as_director': [],
+            'as_actor': [],
+            'total_movies': 0
+        }
+        
+        # 查询作为导演的电影
+        director_query = """
+            SELECT 
+                d.director_id,
+                m.movie_id, 
+                m.rank, 
+                m.cn_title, 
+                m.original_title, 
+                m.year, 
+                m.rating, 
+                m.poster_url,
+                m.description,
+                COALESCE(STRING_AGG(DISTINCT a.name, ', ') FILTER (WHERE a.name IS NOT NULL), '') as actors,
+                COALESCE(STRING_AGG(DISTINCT g.name, ', ') FILTER (WHERE g.name IS NOT NULL), '') as genres
+            FROM director d
+            JOIN movie_director md ON d.director_id = md.director_id
+            JOIN movie m ON md.movie_id = m.movie_id
+            LEFT JOIN movie_actor ma ON m.movie_id = ma.movie_id
+            LEFT JOIN actor a ON ma.actor_id = a.actor_id
+            LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
+            LEFT JOIN genre g ON mg.genre_id = g.genre_id
+            WHERE d.name = %s
+            GROUP BY d.director_id, m.movie_id, m.rank
+            ORDER BY m.rank
+            LIMIT 100
+        """
+        
+        # 查询作为演员的电影
+        actor_query = """
+            SELECT 
+                a.actor_id,
+                m.movie_id, 
+                m.rank, 
+                m.cn_title, 
+                m.original_title, 
+                m.year, 
+                m.rating, 
+                m.poster_url,
+                m.description,
+                COALESCE(STRING_AGG(DISTINCT d.name, ', ') FILTER (WHERE d.name IS NOT NULL), '') as directors,
+                COALESCE(STRING_AGG(DISTINCT g.name, ', ') FILTER (WHERE g.name IS NOT NULL), '') as genres
+            FROM actor a
+            JOIN movie_actor ma ON a.actor_id = ma.actor_id
+            JOIN movie m ON ma.movie_id = m.movie_id
+            LEFT JOIN movie_director md ON m.movie_id = md.movie_id
+            LEFT JOIN director d ON md.director_id = d.director_id
+            LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
+            LEFT JOIN genre g ON mg.genre_id = g.genre_id
+            WHERE a.name = %s
+            GROUP BY a.actor_id, m.movie_id, m.rank
+            ORDER BY m.rank
+            LIMIT 100
+        """
+        
+        try:
+            as_director = self.execute_query(director_query, (name,))
+            as_actor = self.execute_query(actor_query, (name,))
+            
+            if as_director:
+                result['roles'].append('导演')
+                result['as_director'] = as_director
+                result['director_id'] = as_director[0]['director_id']
+            
+            if as_actor:
+                result['roles'].append('演员')
+                result['as_actor'] = as_actor
+                result['actor_id'] = as_actor[0]['actor_id']
+            
+            # 计算总电影数（去重，因为可能在同一部电影中既是导演又是演员）
+            director_movie_ids = {movie['movie_id'] for movie in as_director} if as_director else set()
+            actor_movie_ids = {movie['movie_id'] for movie in as_actor} if as_actor else set()
+            unique_movie_ids = director_movie_ids | actor_movie_ids
+            result['total_movies'] = len(unique_movie_ids)
+            
+            # 如果该影人没有任何作品，返回 None
+            if not result['roles']:
+                return None
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"查询影人信息失败: {str(e)}")
+            return None
