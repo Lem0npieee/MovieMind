@@ -345,7 +345,7 @@ async function performAISearch(query) {
     const moviesDiv = document.getElementById('ai-movies');
 
     resultDiv.style.display = 'block';
-    interpretationDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>AI 正在分析您的需求...</p></div>';
+    interpretationDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在将自然语言转换为 SQL 并执行查询...</p></div>';
     moviesDiv.innerHTML = '';
 
     try {
@@ -361,8 +361,8 @@ async function performAISearch(query) {
 
         if (data.success) {
             interpretationDiv.innerHTML = `
-                <p><strong>AI 理解:</strong> ${data.query_info.interpretation}</p>
-                ${data.query_info.generated_sql ? `<p style="font-size: 0.9rem; color: #636e72; margin-top: 0.5rem;">SQL: <code>${data.query_info.generated_sql}</code></p>` : ''}
+                <p><strong>查询理解:</strong> ${data.query_info.interpretation}</p>
+                ${data.query_info.generated_sql ? `<p style="font-size: 0.9rem; color: #636e72; margin-top: 0.5rem; word-break: break-all;"><strong>生成的SQL:</strong> <code>${data.query_info.generated_sql}</code></p>` : ''}
             `;
 
             if (data.data.length > 0) {

@@ -543,13 +543,12 @@ class DatabaseManager:
 - actors (演员，用逗号分隔)
 
 查询要求：
-1. 最多返回50条记录
-2. 按rank升序排列
-3. 使用LEFT JOIN获取导演和演员信息
-4. 使用GROUP BY和STRING_AGG聚合导演/演员
-5. 对于关键词，使用ILIKE进行模糊匹配
-6. 对于评分、大海等主题，可以在description、cn_title、original_title中搜索
-7. 使用PostgreSQL兼容语法：COALESCE, STRING_AGG, ILIKE, EXISTS子查询等
+1. 按rank升序排列
+2. 使用LEFT JOIN获取导演和演员信息
+3. 使用GROUP BY和STRING_AGG聚合导演/演员
+4. 对于关键词，使用ILIKE进行模糊匹配
+5. 对于评分、大海等主题，可以在description、cn_title、original_title中搜索
+6. 使用PostgreSQL兼容语法：COALESCE, STRING_AGG, ILIKE, EXISTS子查询等
 
 用自然语言解释查询意图。
 
@@ -569,7 +568,7 @@ class DatabaseManager:
 用户查询："我要和大海有关的电影，而且评分不能少于9分"
 返回：
 {{
-    "sql": "SELECT m.movie_id, m.rank, m.cn_title, m.original_title, m.year, m.rating, m.poster_url, COALESCE(STRING_AGG(DISTINCT d.name, ', '), '') AS directors, COALESCE(STRING_AGG(DISTINCT a.name, ', '), '') AS actors FROM movie m LEFT JOIN movie_director md ON m.movie_id = md.movie_id LEFT JOIN director d ON md.director_id = d.director_id LEFT JOIN movie_actor ma ON m.movie_id = ma.movie_id LEFT JOIN actor a ON ma.actor_id = a.actor_id WHERE m.rating >= 9.0 AND (m.cn_title ILIKE '%大海%' OR m.original_title ILIKE '%sea%' OR m.description ILIKE '%大海%' OR m.description ILIKE '%海洋%' OR m.description ILIKE '%海边%') GROUP BY m.movie_id ORDER BY m.rank LIMIT 50",
+    "sql": "SELECT m.movie_id, m.rank, m.cn_title, m.original_title, m.year, m.rating, m.poster_url, COALESCE(STRING_AGG(DISTINCT d.name, ', '), '') AS directors, COALESCE(STRING_AGG(DISTINCT a.name, ', '), '') AS actors FROM movie m LEFT JOIN movie_director md ON m.movie_id = md.movie_id LEFT JOIN director d ON md.director_id = d.director_id LEFT JOIN movie_actor ma ON m.movie_id = ma.movie_id LEFT JOIN actor a ON ma.actor_id = a.actor_id WHERE m.rating >= 9.0 AND (m.cn_title ILIKE '%大海%' OR m.original_title ILIKE '%sea%' OR m.description ILIKE '%大海%' OR m.description ILIKE '%海洋%' OR m.description ILIKE '%海边%') GROUP BY m.movie_id ORDER BY m.rank",
     "interpretation": "搜索评分9.0分以上的与大海相关的电影",
     "conditions": {{
         "genre": null,
@@ -583,7 +582,7 @@ class DatabaseManager:
 用户查询："高分科幻烧脑电影"
 返回：
 {{
-    "sql": "SELECT m.movie_id, m.rank, m.cn_title, m.original_title, m.year, m.rating, m.poster_url, COALESCE(STRING_AGG(DISTINCT d.name, ', '), '') AS directors, COALESCE(STRING_AGG(DISTINCT a.name, ', '), '') AS actors FROM movie m LEFT JOIN movie_director md ON m.movie_id = md.movie_id LEFT JOIN director d ON md.director_id = d.director_id LEFT JOIN movie_actor ma ON m.movie_id = ma.movie_id LEFT JOIN actor a ON ma.actor_id = a.actor_id WHERE m.rating >= 8.5 AND EXISTS (SELECT 1 FROM movie_genre mg JOIN genre g ON mg.genre_id = g.genre_id WHERE mg.movie_id = m.movie_id AND g.name ILIKE '%科幻%') AND (m.description ILIKE '%烧脑%' OR m.cn_title ILIKE '%烧脑%') GROUP BY m.movie_id ORDER BY m.rank LIMIT 50",
+    "sql": "SELECT m.movie_id, m.rank, m.cn_title, m.original_title, m.year, m.rating, m.poster_url, COALESCE(STRING_AGG(DISTINCT d.name, ', '), '') AS directors, COALESCE(STRING_AGG(DISTINCT a.name, ', '), '') AS actors FROM movie m LEFT JOIN movie_director md ON m.movie_id = md.movie_id LEFT JOIN director d ON md.director_id = d.director_id LEFT JOIN movie_actor ma ON m.movie_id = ma.movie_id LEFT JOIN actor a ON ma.actor_id = a.actor_id WHERE m.rating >= 8.5 AND EXISTS (SELECT 1 FROM movie_genre mg JOIN genre g ON mg.genre_id = g.genre_id WHERE mg.movie_id = m.movie_id AND g.name ILIKE '%科幻%') AND (m.description ILIKE '%烧脑%' OR m.cn_title ILIKE '%烧脑%') GROUP BY m.movie_id ORDER BY m.rank",
     "interpretation": "搜索评分8.5分以上的科幻类型烧脑电影",
     "conditions": {{
         "genre": "科幻",
@@ -648,21 +647,46 @@ class DatabaseManager:
                 return None, interpretation
                 
         except json.JSONDecodeError:
-            # 如果不是JSON，尝试提取SQL和解释
+            # 如果不是JSON,可能被包裹在代码块中,先尝试提取
             logger.warning(f"AI响应不是有效JSON: {response}")
             
-            sql_start = response.upper().find('SELECT')
-            if sql_start != -1:
-                sql_candidate = response[sql_start:]
-                for terminator in ['```', '\n\n', '\r\n\r\n']:
-                    idx = sql_candidate.find(terminator)
-                    if idx != -1:
-                        sql_candidate = sql_candidate[:idx]
-                        break
-                sql_candidate = sql_candidate.strip().rstrip(',')
-                if sql_candidate.upper().startswith('SELECT'):
-                    return sql_candidate, "从文本中提取的查询"
-            return None, "无法解析AI响应"
+            # 移除可能的markdown代码块标记
+            cleaned_response = response.strip()
+            if cleaned_response.startswith('```json'):
+                cleaned_response = cleaned_response[7:]
+            elif cleaned_response.startswith('```'):
+                cleaned_response = cleaned_response[3:]
+            if cleaned_response.endswith('```'):
+                cleaned_response = cleaned_response[:-3]
+            cleaned_response = cleaned_response.strip()
+            
+            # 再次尝试解析JSON
+            try:
+                parsed = json.loads(cleaned_response)
+                sql = parsed.get('sql', '').strip()
+                interpretation = parsed.get('interpretation', 'AI生成的查询').strip()
+                
+                if sql and sql.upper().startswith('SELECT'):
+                    return sql, interpretation
+                else:
+                    logger.warning(f"AI返回的SQL无效: {sql}")
+                    return None, interpretation
+            except json.JSONDecodeError:
+                # 最后尝试从文本中直接提取SQL
+                sql_start = cleaned_response.upper().find('SELECT')
+                if sql_start != -1:
+                    sql_candidate = cleaned_response[sql_start:]
+                    # 查找SQL语句的结束位置(遇到引号、逗号或换行符)
+                    end_pos = len(sql_candidate)
+                    for terminator in ['"', '",', '\n\n', '\r\n\r\n']:
+                        idx = sql_candidate.find(terminator)
+                        if idx != -1 and idx < end_pos:
+                            end_pos = idx
+                    sql_candidate = sql_candidate[:end_pos].strip()
+                    
+                    if sql_candidate.upper().startswith('SELECT'):
+                        return sql_candidate, "从文本中提取的查询"
+                return None, "无法解析AI响应"
     
     def _execute_ai_sql(self, sql_query: str) -> List[Dict]:
         """执行AI生成的SQL查询"""
@@ -673,7 +697,7 @@ class DatabaseManager:
             
             result = self.execute_query(sql_query)
             if result and isinstance(result[0], dict):
-                return result[:50]
+                return result
             if result:
                 logger.warning(f"查询结果格式异常: {type(result)}")
             return result or []

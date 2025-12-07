@@ -16,7 +16,7 @@
             </div>
             <div class="nav-menu">
                 <a href="#" class="nav-link active" data-page="home">首页</a>
-                <a href="#" class="nav-link" data-page="search">智能搜索</a>
+                <a href="#" class="nav-link" data-page="search">自然语言查询</a>
                 <a href="#" class="nav-link" data-page="stats">数据可视化</a>
                 <a href="#" class="nav-link" data-page="auth">账户</a>
             </div>
@@ -92,30 +92,30 @@
             </div>
         </section>
 
-        <!-- AI 智能搜索页 -->
+        <!-- 自然语言查询页 -->
         <section id="page-search" class="page-section">
             <div class="container">
                 <div class="ai-search-container">
-                    <h2>🤖 AI 智能选片助手</h2>
-                    <p class="subtitle">告诉我你的心情或需求，我会从 Top 250 中为你推荐最合适的电影</p>
+                    <h2>💬 自然语言查询助手</h2>
+                    <p class="subtitle">用自然语言描述查询条件，AI 将其转换为 SQL 语句并执行查询</p>
                     
                     <div class="ai-input-area">
-                        <textarea id="ai-query" placeholder="例如：推荐一部适合失恋看的、结局治愈的电影，不要太老的片子&#10;或者：我想看节奏紧凑的犯罪悬疑片，最好是90年代的&#10;或者：有哪些关于人生意义的哲学电影？"></textarea>
-                        <button id="btn-ai-search" class="btn btn-primary btn-large">开始推荐</button>
+                        <textarea id="ai-query" placeholder="例如：查找2019年以后上映的评分9分以上的科幻电影&#10;或者：我要看90年代的犯罪类型电影，导演是昆汀·塔伦蒂诺的&#10;或者：评分8.5以上的日本动画电影有哪些？"></textarea>
+                        <button id="btn-ai-search" class="btn btn-primary btn-large">执行查询</button>
                     </div>
 
                     <!-- 示例查询 -->
                     <div class="example-queries">
-                        <p>试试这些:</p>
-                        <button class="example-btn">适合深夜一个人看的电影</button>
-                        <button class="example-btn">励志治愈的动画片</button>
-                        <button class="example-btn">经典黑帮犯罪片</button>
-                        <button class="example-btn">高分科幻烧脑电影</button>
+                        <p>查询示例:</p>
+                        <button class="example-btn">2010年后评分9分以上的电影</button>
+                        <button class="example-btn">克里斯托弗·诺兰导演的科幻电影</button>
+                        <button class="example-btn">评分最高的十部动画电影</button>
+                        <button class="example-btn">阿凡达的导演的所有作品</button>
                     </div>
 
-                    <!-- AI 回复区域 -->
+                    <!-- 查询结果区域 -->
                     <div id="ai-result" class="ai-result" style="display: none;">
-                        <h3>推荐结果</h3>
+                        <h3>查询结果</h3>
                         <div id="ai-interpretation" class="ai-interpretation"></div>
                         <div id="ai-movies" class="movies-grid"></div>
                     </div>
