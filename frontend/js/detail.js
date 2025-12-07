@@ -322,6 +322,7 @@ function renderReviews() {
         const item = document.createElement('li');
         item.className = 'review-item';
         item.innerHTML = `
+            <img src="assets/douban-watermark.svg" alt="豆瓣" class="douban-watermark">
             <div class="review-meta">
                 <span class="review-author">${review.username || '匿名用户'}</span>
                 <div class="rating-display" aria-label="评分">

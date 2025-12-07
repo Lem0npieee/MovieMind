@@ -204,6 +204,32 @@ def ai_search():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/ai-recommend', methods=['POST'])
+def ai_recommend():
+    """AI 智能推荐（基于情感和场景）"""
+    try:
+        data = request.get_json()
+        user_input = data.get('query', '')
+        
+        if not user_input:
+            return jsonify({'success': False, 'error': '请描述你的心情或场景'}), 400
+        
+        result = db_manager.ai_recommend(user_input)
+        
+        return jsonify({
+            'success': True,
+            'data': result['movies'],
+            'recommendation_info': {
+                'original_query': user_input,
+                'interpretation': result.get('interpretation', ''),
+                'reasoning': result.get('reasoning', '')
+            }
+        })
+    except Exception as e:
+        logger.error(f"AI 推荐失败: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/genres', methods=['GET'])
 def get_genres():
     """获取所有电影类型"""

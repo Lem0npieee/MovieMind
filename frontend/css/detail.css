@@ -596,12 +596,24 @@ body {
 }
 
 .review-item {
+    position: relative;
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1rem 1.2rem;
     background: var(--card-bg);
     box-shadow: var(--shadow-soft);
     transition: all 0.3s ease;
+}
+
+.review-item .douban-watermark {
+    position: absolute;
+    top: 1.3rem;
+    right: 7rem;
+    width: 100px;
+    height: auto;
+    opacity: 0.85;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .review-item:hover {

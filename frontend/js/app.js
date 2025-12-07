@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initSearch();
     initAISearch();
+    initRecommend();
     initAuth();
     loadMovies();
     loadGenres();
@@ -382,6 +383,82 @@ async function performAISearch(query) {
 }
 
 /**
+ * 初始化AI推荐功能
+ */
+function initRecommend() {
+    document.getElementById('btn-recommend').addEventListener('click', () => {
+        const query = document.getElementById('recommend-query').value.trim();
+        if (query) {
+            performRecommend(query);
+        }
+    });
+
+    // 示例查询按钮
+    document.querySelectorAll('.example-btn-recommend').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const query = e.target.textContent;
+            document.getElementById('recommend-query').value = query;
+            performRecommend(query);
+        });
+    });
+}
+
+/**
+ * AI 智能推荐
+ */
+async function performRecommend(query) {
+    const resultDiv = document.getElementById('recommend-result');
+    const interpretationDiv = document.getElementById('recommend-interpretation');
+    const moviesDiv = document.getElementById('recommend-movies');
+
+    resultDiv.style.display = 'block';
+    interpretationDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>AI 正在理解你的需求并推荐最适合的电影...</p></div>';
+    moviesDiv.innerHTML = '';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/ai-recommend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // 格式化推荐理由，处理分点显示
+            let reasoningHtml = '';
+            if (data.recommendation_info.reasoning) {
+                const reasoning = data.recommendation_info.reasoning
+                    .replace(/(\d+\.\s*《)/g, '<br>$1')  // 在数字编号前换行
+                    .replace(/；(\d+)/g, '；<br>$1')     // 在分号+数字前换行
+                    .trim();
+                reasoningHtml = `<p style="font-size: 0.9rem; color: #636e72; margin-top: 0.5rem; line-height: 1.8;"><strong>推荐理由:</strong> ${reasoning}</p>`;
+            }
+            
+            interpretationDiv.innerHTML = `
+                <p><strong>AI 理解:</strong> ${data.recommendation_info.interpretation}</p>
+                ${reasoningHtml}
+            `;
+
+            if (data.data.length > 0) {
+                data.data.forEach(movie => {
+                    const card = createMovieCard(movie);
+                    moviesDiv.appendChild(card);
+                });
+            } else {
+                moviesDiv.innerHTML = '<p style="text-align: center; padding: 2rem;">未找到符合条件的电影</p>';
+            }
+        } else {
+            interpretationDiv.innerHTML = `<p style="color: red;">推荐失败: ${data.error}</p>`;
+        }
+    } catch (error) {
+        interpretationDiv.innerHTML = `<p style="color: red;">网络错误: ${error.message}</p>`;
+    }
+}
+
+/**
  * 初始化账号管理
  */
 function initAuth() {
@@ -585,6 +662,8 @@ async function loadStatistics() {
         const data = await response.json();
 
         if (data.success) {
+            console.log('Statistics data:', data.data);
+            console.log('Country distribution:', data.data.country_distribution);
             renderCharts(data.data);
         }
     } catch (error) {
@@ -631,22 +710,159 @@ function renderCharts(stats) {
         });
     }
 
-    // 评分分布图表
+    // 评分分布图表 - 0.3分区间直方图
     if (stats.rating_distribution) {
         const ctx3 = document.getElementById('chart-rating').getContext('2d');
         new Chart(ctx3, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: stats.rating_distribution.map(d => d.rating_group + '分'),
+                labels: stats.rating_distribution.map(d => d.range),
                 datasets: [{
                     label: '电影数量',
                     data: stats.rating_distribution.map(d => d.count),
-                    borderColor: '#0984e3',
-                    backgroundColor: 'rgba(9, 132, 227, 0.1)',
-                    fill: true
+                    backgroundColor: '#0984e3',
+                    borderColor: '#0652a1',
+                    borderWidth: 1
                 }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                }
             }
         });
+    }
+
+    // 国家/地区分布图表
+    if (stats.country_distribution) {
+        const ctx4 = document.getElementById('chart-country').getContext('2d');
+        new Chart(ctx4, {
+            type: 'doughnut',
+            data: {
+                labels: stats.country_distribution.map(d => d.country),
+                datasets: [{
+                    data: stats.country_distribution.map(d => d.count),
+                    backgroundColor: [
+                        '#e74c3c', '#3498db', '#2ecc71', '#f39c12',
+                        '#9b59b6', '#1abc9c', '#e67e22', '#34495e',
+                        '#95a5a6', '#d35400'
+                    ]
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+
+    // 导演作品排行图表
+    if (stats.director_ranking) {
+        const ctx5 = document.getElementById('chart-director').getContext('2d');
+        const directorChart = new Chart(ctx5, {
+            type: 'bar',
+            data: {
+                labels: stats.director_ranking.map(d => d.name),
+                datasets: [{
+                    label: '作品数量',
+                    data: stats.director_ranking.map(d => d.count),
+                    backgroundColor: 'rgba(155, 89, 182, 0.7)',
+                    borderColor: 'rgba(155, 89, 182, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const directorName = stats.director_ranking[index].name;
+                        window.location.href = `celebrity.html?name=${encodeURIComponent(directorName)}`;
+                    }
+                }
+            }
+        });
+        // 添加鼠标悬停样式提示
+        ctx5.canvas.style.cursor = 'pointer';
+    }
+
+    // 演员出镜排行图表
+    if (stats.actor_ranking) {
+        const ctx6 = document.getElementById('chart-actor').getContext('2d');
+        const actorChart = new Chart(ctx6, {
+            type: 'bar',
+            data: {
+                labels: stats.actor_ranking.map(d => d.name),
+                datasets: [{
+                    label: '出镜次数',
+                    data: stats.actor_ranking.map(d => d.count),
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const actorName = stats.actor_ranking[index].name;
+                        window.location.href = `celebrity.html?name=${encodeURIComponent(actorName)}`;
+                    }
+                }
+            }
+        });
+        // 添加鼠标悬停样式提示
+        ctx6.canvas.style.cursor = 'pointer';
     }
 }
 

@@ -16,8 +16,9 @@
             </div>
             <div class="nav-menu">
                 <a href="#" class="nav-link active" data-page="home">首页</a>
+                <a href="#" class="nav-link" data-page="recommend">AI智能推荐</a>
                 <a href="#" class="nav-link" data-page="search">自然语言查询</a>
-                <a href="#" class="nav-link" data-page="stats">数据可视化</a>
+                <a href="#" class="nav-link" data-page="stats">数据可视化看板</a>
                 <a href="#" class="nav-link" data-page="auth">账户</a>
             </div>
         </div>
@@ -92,6 +93,37 @@
             </div>
         </section>
 
+        <!-- AI智能推荐页 -->
+        <section id="page-recommend" class="page-section">
+            <div class="container">
+                <div class="ai-search-container">
+                    <h2>🤖 AI 智能推荐助手</h2>
+                    <p class="subtitle">描述你的心情、场景或观影需求，AI 将基于内容理解为你推荐最适合的电影</p>
+                    
+                    <div class="ai-input-area">
+                        <textarea id="recommend-query" placeholder="例如：我今天失恋了，想看一些治愈的电影&#10;或者：我和朋友在路上旅行，推荐适合在路上看的电影&#10;或者：最近工作压力很大，需要一些励志的电影"></textarea>
+                        <button id="btn-recommend" class="btn btn-primary btn-large">获取推荐</button>
+                    </div>
+
+                    <!-- 示例查询 -->
+                    <div class="example-queries">
+                        <p>推荐示例:</p>
+                        <button class="example-btn-recommend">我失恋了，想看治愈的电影</button>
+                        <button class="example-btn-recommend">适合深夜一个人看的电影</button>
+                        <button class="example-btn-recommend">和家人一起看的温馨电影</button>
+                        <button class="example-btn-recommend">最近很焦虑，需要放松心情</button>
+                    </div>
+
+                    <!-- 推荐结果区域 -->
+                    <div id="recommend-result" class="ai-result" style="display: none;">
+                        <h3>推荐结果</h3>
+                        <div id="recommend-interpretation" class="ai-interpretation"></div>
+                        <div id="recommend-movies" class="movies-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- 自然语言查询页 -->
         <section id="page-search" class="page-section">
             <div class="container">
@@ -139,6 +171,18 @@
                     <div class="chart-box">
                         <h3>评分分布</h3>
                         <canvas id="chart-rating"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>国家/地区分布</h3>
+                        <canvas id="chart-country"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>导演作品排行 Top 10</h3>
+                        <canvas id="chart-director"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>演员出镜排行 Top 10</h3>
+                        <canvas id="chart-actor"></canvas>
                     </div>
                 </div>
             </div>
