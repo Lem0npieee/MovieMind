@@ -6,9 +6,10 @@ const API_BASE_URL = 'http://localhost:5000/api';
 const PLACEHOLDER_POSTER = 'https://via.placeholder.com/240x360?text=No+Image';
 const THEME_STORAGE_KEY = 'moviemind_theme';
 
-// 从 URL 获取影人名字
+// 从 URL 获取影人名字和来源
 const params = new URLSearchParams(window.location.search);
 const celebrityName = params.get('name');
+const fromPage = params.get('from');
 
 const loadingContainer = document.getElementById('loading-container');
 const celebrityHero = document.getElementById('celebrity-hero');
@@ -18,6 +19,13 @@ const errorMessage = document.getElementById('error-message');
 
 // 初始化主题
 initTheme();
+
+// 根据来源设置返回链接
+const backLink = document.querySelector('.back-link');
+if (backLink && fromPage === 'stats') {
+    backLink.href = 'index.html#page-stats';
+    backLink.textContent = '返回数据看板';
+}
 
 // 加载影人信息
 if (!celebrityName) {

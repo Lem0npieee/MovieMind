@@ -808,7 +808,7 @@ function renderCharts(stats) {
                     if (elements.length > 0) {
                         const index = elements[0].index;
                         const directorName = stats.director_ranking[index].name;
-                        window.location.href = `celebrity.html?name=${encodeURIComponent(directorName)}`;
+                        window.location.href = `celebrity.html?name=${encodeURIComponent(directorName)}&from=stats`;
                     }
                 }
             }
@@ -856,7 +856,7 @@ function renderCharts(stats) {
                     if (elements.length > 0) {
                         const index = elements[0].index;
                         const actorName = stats.actor_ranking[index].name;
-                        window.location.href = `celebrity.html?name=${encodeURIComponent(actorName)}`;
+                        window.location.href = `celebrity.html?name=${encodeURIComponent(actorName)}&from=stats`;
                     }
                 }
             }
