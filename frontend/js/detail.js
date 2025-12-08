@@ -332,7 +332,6 @@ function renderReviews() {
             <p class="review-content">${escapeHtml(review.comment || '暂无内容')}</p>
             <div class="review-footer">
                 <span>#${review.comment_id || review.review_id}</span>
-                <span>${formatDate(review.created_at)}</span>
             </div>
         `;
         reviewList.appendChild(item);

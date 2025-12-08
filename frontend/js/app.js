@@ -11,6 +11,11 @@ const THEME_STORAGE_KEY = 'moviemind_theme';
 let currentPage = 1;
 let currentFilters = {};
 let currentUser = null;
+const accountButton = document.getElementById('account-display');
+const accountName = document.getElementById('account-name');
+const accountDropdown = document.getElementById('account-dropdown');
+const accountHomeBtn = document.getElementById('account-home');
+const accountLogoutBtn = document.getElementById('account-logout');
 
 /**
  * 初始化应用
@@ -82,11 +87,12 @@ function initNavigation() {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetPage = e.target.dataset.page;
+            const targetPage = e.currentTarget.dataset.page;
+            if (!targetPage) return;
 
             // 更新导航状态
             navLinks.forEach(l => l.classList.remove('active'));
-            e.target.classList.add('active');
+            e.currentTarget.classList.add('active');
 
             // 切换页面
             pageSections.forEach(section => {
@@ -464,6 +470,9 @@ async function performRecommend(query) {
 function initAuth() {
     currentUser = loadUserFromStorage();
     updateAuthStatus();
+    updateAccountDisplay();
+
+    setupAccountDropdown();
 
     const registerForm = document.getElementById('register-form');
     if (registerForm) {
@@ -478,6 +487,46 @@ function initAuth() {
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
+    }
+}
+
+function setupAccountDropdown() {
+    if (!accountButton || !accountDropdown) return;
+
+    const closeDropdown = () => accountDropdown.classList.remove('open');
+
+    accountButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!currentUser) {
+            window.location.href = 'auth.html';
+            return;
+        }
+        accountDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', closeDropdown);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDropdown();
+    });
+
+    if (accountHomeBtn) {
+        accountHomeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDropdown();
+            window.location.href = 'user_home.html';
+        });
+    }
+
+    if (accountLogoutBtn) {
+        accountLogoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDropdown();
+            currentUser = null;
+            saveUserToStorage(null);
+            updateAuthStatus();
+            updateAccountDisplay();
+            window.location.href = 'auth.html';
+        });
     }
 }
 
@@ -563,6 +612,7 @@ async function handleRegisterSubmit(event) {
         currentUser = result.data;
         saveUserToStorage(currentUser);
         updateAuthStatus();
+        updateAccountDisplay();
         event.target.reset();
         showAuthMessage('success', '注册成功，已自动登录！');
     } catch (error) {
@@ -595,6 +645,7 @@ async function handleLoginSubmit(event) {
         currentUser = result.data;
         saveUserToStorage(currentUser);
         updateAuthStatus();
+        updateAccountDisplay();
         showAuthMessage('success', `欢迎回来，${currentUser.username}!`);
     } catch (error) {
         showAuthMessage('error', error.message || '登录失败，请稍后重试');
@@ -605,7 +656,21 @@ function handleLogout() {
     currentUser = null;
     saveUserToStorage(null);
     updateAuthStatus();
+    updateAccountDisplay();
     showAuthMessage('success', '已成功退出登录');
+}
+
+function updateAccountDisplay() {
+    if (!accountButton) return;
+
+    const labelTarget = accountName || accountButton;
+    const label = currentUser && currentUser.username ? currentUser.username : '点击登录';
+
+    if (labelTarget === accountButton) {
+        accountButton.textContent = label;
+    } else {
+        accountName.textContent = label;
+    }
 }
 
 /**

@@ -14,12 +14,23 @@
                 <h1>🎬 MovieMind</h1>
                 <p class="tagline">发现经典 · 智能推荐</p>
             </div>
-            <div class="nav-menu">
-                <a href="#" class="nav-link active" data-page="home">首页</a>
-                <a href="#" class="nav-link" data-page="recommend">AI智能推荐</a>
-                <a href="#" class="nav-link" data-page="search">自然语言查询</a>
-                <a href="#" class="nav-link" data-page="stats">数据可视化看板</a>
-                <a href="#" class="nav-link" data-page="auth">账户</a>
+            <div class="nav-right">
+                <div class="nav-menu">
+                    <a href="#" class="nav-link active" data-page="home">首页</a>
+                    <a href="#" class="nav-link" data-page="recommend">AI智能推荐</a>
+                    <a href="#" class="nav-link" data-page="search">自然语言查询</a>
+                    <a href="#" class="nav-link" data-page="stats">数据可视化看板</a>
+                </div>
+                <div class="account-wrapper">
+                    <button id="account-display" class="account-chip" aria-label="账户入口">
+                        <span id="account-name">点击登录</span>
+                        <span class="account-caret">▾</span>
+                    </button>
+                    <div id="account-dropdown" class="account-dropdown" aria-label="账户菜单">
+                        <button class="dropdown-item" id="account-home">个人主页</button>
+                        <button class="dropdown-item" id="account-logout">退出登录</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -188,53 +199,6 @@
             </div>
         </section>
 
-        <!-- 账户中心 -->
-        <section id="page-auth" class="page-section">
-            <div class="container auth-container">
-                <h2>👤 账户中心</h2>
-                <p id="auth-status-text" class="auth-status-text">请先登录或注册以保存个性化数据</p>
-                <div class="auth-actions">
-                    <button id="btn-logout" class="btn btn-secondary" style="display: none;">退出登录</button>
-                </div>
-                <div id="auth-message" class="auth-message" style="display: none;"></div>
-                <div class="auth-grid">
-                    <div class="auth-card">
-                        <h3>注册新账号</h3>
-                        <p class="auth-tip">注册后即可参与评论互动，收藏喜欢的电影</p>
-                        <form id="register-form">
-                            <div class="form-group">
-                                <label for="register-username">用户名</label>
-                                <input type="text" id="register-username" required maxlength="100" placeholder="请输入用户名">
-                            </div>
-                            <div class="form-group">
-                                <label for="register-email">邮箱</label>
-                                <input type="email" id="register-email" required placeholder="请输入邮箱">
-                            </div>
-                            <div class="form-group">
-                                <label for="register-password">密码</label>
-                                <input type="password" id="register-password" required minlength="6" placeholder="至少 6 位字符">
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">注册账号</button>
-                        </form>
-                    </div>
-                    <div class="auth-card">
-                        <h3>已有账号登录</h3>
-                        <p class="auth-tip">登录后可同步浏览历史和个性化推荐</p>
-                        <form id="login-form">
-                            <div class="form-group">
-                                <label for="login-username">用户名</label>
-                                <input type="text" id="login-username" required placeholder="请输入用户名">
-                            </div>
-                            <div class="form-group">
-                                <label for="login-password">密码</label>
-                                <input type="password" id="login-password" required placeholder="请输入密码">
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">登录</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- 电影详情模态框 -->

@@ -82,6 +82,8 @@ def register_user():
 
         if db_manager.get_user_by_username(username):
             return jsonify({'success': False, 'error': '该用户名已被注册'}), 409
+        if db_manager.get_user_by_email(email):
+            return jsonify({'success': False, 'error': '该邮箱已被注册'}), 409
 
         user = db_manager.create_user(username, password, email)
         return jsonify({'success': True, 'data': serialize_user(user)})

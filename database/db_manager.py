@@ -583,6 +583,11 @@ class DatabaseManager:
         query = 'SELECT user_id, username, email, password, last_login, created_at FROM "user" WHERE LOWER(username) = LOWER(%s) LIMIT 1'
         return self.execute_query(query, (username,), fetch_one=True)
 
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        """根据邮箱查询用户（忽略大小写）"""
+        query = 'SELECT user_id, username, email, password, last_login, created_at FROM "user" WHERE LOWER(email) = LOWER(%s) LIMIT 1'
+        return self.execute_query(query, (email,), fetch_one=True)
+
     def verify_user_credentials(self, username: str, password: str) -> Optional[Dict]:
         """验证用户名和密码，返回用户信息"""
         user = self.get_user_by_username(username)

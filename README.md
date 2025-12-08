@@ -59,22 +59,7 @@ final_project/
 
 ### 2. 配置数据库连接
 
-复制 `.env.example` 为 `.env`，并修改数据库配置:
-
-```bash
-cd backend
-copy .env.example .env
-```
-
-编辑 `.env` 文件，设置数据库连接信息:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=moviemind
-DB_USER=gaussdb
-DB_PASSWORD=Gaussdb@123
-```
+编辑 `.env` 文件，设置数据库连接信息。
 
 ### 3. 安装 Python 依赖
 
@@ -107,7 +92,7 @@ python app.py
 
 ### 7. 启动前端
 
-直接用浏览器打开 `frontend/index.html`，或使用 VS Code 的 Live Server 插件。
+直接点击文件中的index.html
 
 ## 数据库设计
 

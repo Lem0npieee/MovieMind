@@ -1,0 +1,177 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', 'PingFang SC', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+    --bg: #0b1224;
+    --card: #0f172a;
+    --accent: #00d4aa;
+    --accent-2: #7c3aed;
+    --text: #e8ecf5;
+    --muted: #9aa4b5;
+    --border: #1f2a44;
+    --shadow: 0 20px 80px rgba(0,0,0,0.55);
+}
+
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at 20% 20%, rgba(0,212,170,0.08), transparent 35%),
+                radial-gradient(circle at 80% 10%, rgba(124,58,237,0.08), transparent 30%),
+                var(--bg);
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.auth-shell {
+    position: relative;
+    z-index: 1;
+    width: min(420px, 94vw);
+}
+
+.auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(4px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 26px; /* increased spacing between brand and title */
+}
+
+.brand-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    box-shadow: 0 10px 30px rgba(0,212,170,0.35);
+}
+
+.brand-text h1 {
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+}
+
+.brand-text p {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px; /* give title a bit more breathing room */
+}
+
+/* Hide the subtitle line (welcome / register hints) per UI request */
+#form-subtitle,
+.subtitle {
+    display: none;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+label {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+input {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0,212,170,0.1);
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(120deg, var(--accent), #12c2e9);
+    border: none;
+    color: #0b1224;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 4px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(0,212,170,0.35);
+}
+
+.primary-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.switcher {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.message {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    min-height: 20px;
+}
+
+.message.success { color: #38ef7d; }
+.message.error { color: #ff7675; }
+.message.info { color: #74b9ff; }
+
+@media (max-width: 480px) {
+    .auth-card { padding: 22px; }
+    h2 { font-size: 1.35rem; }
+    .brand-text h1 { font-size: 1.5rem; }
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 / 注册 - MovieMind</title>
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <main class="auth-shell">
+        <div class="auth-card" id="auth-card">
+            <div class="brand">
+                <div class="brand-icon">🎬</div>
+                <div class="brand-text">
+                    <h1>MovieMind</h1>
+                    <p>AI 驱动的电影信息平台</p>
+                </div>
+            </div>
+            <h2 id="form-title">登录账号</h2>
+            <p id="form-subtitle" class="subtitle">欢迎回来，填写信息后继续</p>
+
+            <form id="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" placeholder="输入用户名" required>
+                </div>
+                <div class="form-group" id="email-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" placeholder="至少 6 位" required>
+                </div>
+                <button type="submit" class="primary-btn" id="submit-btn">登录</button>
+            </form>
+
+            <div class="switcher">
+                <span id="switch-tip">还没有账号？</span>
+                <button id="switch-btn" class="link-btn" type="button">立即注册</button>
+            </div>
+
+            <p class="message" id="auth-message"></p>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
