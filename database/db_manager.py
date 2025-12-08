@@ -399,6 +399,101 @@ class DatabaseManager:
         
         return reviews, total
 
+    # ========== 用户收藏相关 ==========
+    def add_favorite(self, user_id: int, movie_id: int) -> Dict:
+        """新增收藏，若已存在则更新时间并返回记录。
+
+        有些部署（或老版本的数据库/兼容引擎）可能不支持 `ON CONFLICT`，
+        因此这里使用更兼容的做法：尝试插入，若触发唯一约束冲突则改为更新。
+        """
+        conn = None
+        try:
+            conn = self.get_connection()
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                try:
+                    cursor.execute(
+                        """
+                        INSERT INTO favorite (user_id, movie_id, created_at)
+                        VALUES (%s, %s, CURRENT_TIMESTAMP)
+                        RETURNING favorite_id, user_id, movie_id, created_at
+                        """,
+                        (user_id, movie_id)
+                    )
+                    fav = cursor.fetchone()
+                    conn.commit()
+                    return fav
+                except Exception as e:
+                    # 如果插入因为唯一约束失败，则回退并执行更新（兼容性更好）
+                    conn.rollback()
+                    try:
+                        # 更新已有记录的时间戳并返回
+                        cursor.execute(
+                            """
+                            UPDATE favorite
+                            SET created_at = CURRENT_TIMESTAMP
+                            WHERE user_id = %s AND movie_id = %s
+                            RETURNING favorite_id, user_id, movie_id, created_at
+                            """,
+                            (user_id, movie_id)
+                        )
+                        fav = cursor.fetchone()
+                        conn.commit()
+                        return fav
+                    except Exception:
+                        # 若更新也失败，向上抛出原始错误以便日志记录
+                        if conn:
+                            conn.rollback()
+                        raise e
+        except Exception as e:
+            logger.error(f"收藏创建/更新失败: {str(e)}")
+            raise
+        finally:
+            if conn:
+                self.release_connection(conn)
+
+    def remove_favorite(self, user_id: int, movie_id: int) -> int:
+        """取消收藏，返回影响行数"""
+        query = 'DELETE FROM favorite WHERE user_id = %s AND movie_id = %s'
+        return self.execute_update(query, (user_id, movie_id))
+
+    def is_favorite(self, user_id: int, movie_id: int) -> bool:
+        query = 'SELECT 1 FROM favorite WHERE user_id = %s AND movie_id = %s LIMIT 1'
+        return bool(self.execute_query(query, (user_id, movie_id), fetch_one=True))
+
+    def get_user_favorites(self, user_id: int, limit: int = 3, offset: int = 0) -> List[Dict]:
+        query = """
+            SELECT f.favorite_id, f.created_at,
+                   m.movie_id, m.cn_title, m.original_title, m.poster_url, m.rating, m.year, m.rank
+            FROM favorite f
+            JOIN movie m ON f.movie_id = m.movie_id
+            WHERE f.user_id = %s
+            ORDER BY f.created_at DESC
+            LIMIT %s OFFSET %s;
+        """
+        return self.execute_query(query, (user_id, limit, offset))
+
+    def count_user_favorites(self, user_id: int) -> int:
+        query = 'SELECT COUNT(*) AS total FROM favorite WHERE user_id = %s'
+        res = self.execute_query(query, (user_id,), fetch_one=True)
+        return res['total'] if res else 0
+
+    def get_user_reviews(self, user_id: int, limit: int = 3, offset: int = 0) -> List[Dict]:
+        query = """
+            SELECT r.review_id, r.comment, r.user_rating, r.created_at,
+                   m.movie_id, m.cn_title, m.poster_url, m.year, m.rating
+            FROM review r
+            JOIN movie m ON r.movie_id = m.movie_id
+            WHERE r.user_id = %s
+            ORDER BY COALESCE(r.created_at, NOW()) DESC
+            LIMIT %s OFFSET %s;
+        """
+        return self.execute_query(query, (user_id, limit, offset))
+
+    def count_user_reviews(self, user_id: int) -> int:
+        query = 'SELECT COUNT(*) AS total FROM review WHERE user_id = %s'
+        res = self.execute_query(query, (user_id,), fetch_one=True)
+        return res['total'] if res else 0
+
     def create_review(self, movie_id: int, user_id: int, rating: float, comment: str) -> Dict:
         """创建新的用户评论"""
         conn = None
