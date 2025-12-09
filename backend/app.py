@@ -120,17 +120,21 @@ def get_movies():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         genre = request.args.get('genre', None)
+        country = request.args.get('country', None)
         year_start = request.args.get('year_start', None, type=int)
         year_end = request.args.get('year_end', None, type=int)
         min_rating = request.args.get('min_rating', None, type=float)
+        max_rating = request.args.get('max_rating', None, type=float)
         
         movies, total = db_manager.get_movies(
             page=page,
             per_page=per_page,
             genre=genre,
+            country=country,
             year_start=year_start,
             year_end=year_end,
-            min_rating=min_rating
+            min_rating=min_rating,
+            max_rating=max_rating
         )
         
         return jsonify({
