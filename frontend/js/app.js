@@ -114,10 +114,29 @@ function initNavigation() {
 function initFilters() {
     document.getElementById('btn-filter').addEventListener('click', () => {
         const genre = document.getElementById('filter-genre').value;
+        const country = document.getElementById('filter-country').value;
         const yearRange = document.getElementById('filter-year').value;
-        const minRating = document.getElementById('filter-rating').value;
+        const ratingRange = document.getElementById('filter-rating').value;
 
-        currentFilters = { genre, minRating };
+        currentFilters = { genre };
+        
+        // 国家/地区筛选
+        if (country) {
+            currentFilters.country = country;
+        }
+        
+        // 解析评分区间
+        if (ratingRange) {
+            if (ratingRange.includes('+')) {
+                // 9.8+ 表示9.8以上
+                currentFilters.min_rating = parseFloat(ratingRange.replace('+', ''));
+            } else if (ratingRange.includes('-')) {
+                // 8.0-8.3 表示区间
+                const [min, max] = ratingRange.split('-').map(parseFloat);
+                currentFilters.min_rating = min;
+                currentFilters.max_rating = max;
+            }
+        }
 
         if (yearRange) {
             const [start, end] = yearRange.split('-');
@@ -131,6 +150,7 @@ function initFilters() {
 
     document.getElementById('btn-reset').addEventListener('click', () => {
         document.getElementById('filter-genre').value = '';
+        document.getElementById('filter-country').value = '';
         document.getElementById('filter-year').value = '';
         document.getElementById('filter-rating').value = '';
         currentFilters = {};
@@ -743,7 +763,7 @@ function renderCharts(stats) {
     // 年代分布图表
     if (stats.year_distribution) {
         const ctx1 = document.getElementById('chart-year').getContext('2d');
-        new Chart(ctx1, {
+        const yearChart = new Chart(ctx1, {
             type: 'bar',
             data: {
                 labels: stats.year_distribution.map(d => d.decade),
@@ -752,14 +772,59 @@ function renderCharts(stats) {
                     data: stats.year_distribution.map(d => d.count),
                     backgroundColor: 'rgba(0, 184, 148, 0.7)'
                 }]
+            },
+            options: {
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const decade = stats.year_distribution[index].decade;
+                        
+                        // 映射年代标签到筛选值
+                        const decadeMapping = {
+                            '1950年前': '1900-1949',
+                            '1950s': '1950-1959',
+                            '1960s': '1960-1969',
+                            '1970s': '1970-1979',
+                            '1980s': '1980-1989',
+                            '1990s': '1990-1999',
+                            '2000s': '2000-2009',
+                            '2010s': '2010-2019',
+                            '2020s': '2020-2029'
+                        };
+                        
+                        const yearRange = decadeMapping[decade];
+                        if (yearRange) {
+                            // 跳转到首页并设置筛选条件
+                            const navLinks = document.querySelectorAll('.nav-link');
+                            const pageSections = document.querySelectorAll('.page-section');
+                            
+                            // 切换到首页
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            document.querySelector('[data-page="home"]').classList.add('active');
+                            pageSections.forEach(section => section.classList.remove('active'));
+                            document.getElementById('page-home').classList.add('active');
+                            
+                            // 设置年代筛选条件
+                            document.getElementById('filter-year').value = yearRange;
+                            
+                            // 触发筛选
+                            document.getElementById('btn-filter').click();
+                            
+                            // 滚动到顶部
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }
+                }
             }
         });
+        // 添加鼠标悬停样式提示
+        ctx1.canvas.style.cursor = 'pointer';
     }
 
     // 类型分布图表
     if (stats.genre_distribution) {
         const ctx2 = document.getElementById('chart-genre').getContext('2d');
-        new Chart(ctx2, {
+        const genreChart = new Chart(ctx2, {
             type: 'pie',
             data: {
                 labels: stats.genre_distribution.map(d => d.name),
@@ -771,14 +836,43 @@ function renderCharts(stats) {
                         '#55efc4', '#ffeaa7'
                     ]
                 }]
+            },
+            options: {
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const genreName = stats.genre_distribution[index].name;
+                        
+                        // 跳转到首页并设置筛选条件
+                        const navLinks = document.querySelectorAll('.nav-link');
+                        const pageSections = document.querySelectorAll('.page-section');
+                        
+                        // 切换到首页
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        document.querySelector('[data-page="home"]').classList.add('active');
+                        pageSections.forEach(section => section.classList.remove('active'));
+                        document.getElementById('page-home').classList.add('active');
+                        
+                        // 设置类型筛选条件
+                        document.getElementById('filter-genre').value = genreName;
+                        
+                        // 触发筛选
+                        document.getElementById('btn-filter').click();
+                        
+                        // 滚动到顶部
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
             }
         });
+        // 添加鼠标悬停样式提示
+        ctx2.canvas.style.cursor = 'pointer';
     }
 
-    // 评分分布图表 - 0.3分区间直方图
+    // 评分分布图表 - 4个固定区间
     if (stats.rating_distribution) {
         const ctx3 = document.getElementById('chart-rating').getContext('2d');
-        new Chart(ctx3, {
+        const ratingChart = new Chart(ctx3, {
             type: 'bar',
             data: {
                 labels: stats.rating_distribution.map(d => d.range),
@@ -803,15 +897,42 @@ function renderCharts(stats) {
                     legend: {
                         display: true
                     }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const ratingRange = stats.rating_distribution[index].range;
+                        
+                        // 跳转到首页并设置筛选条件
+                        const navLinks = document.querySelectorAll('.nav-link');
+                        const pageSections = document.querySelectorAll('.page-section');
+                        
+                        // 切换到首页
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        document.querySelector('[data-page="home"]').classList.add('active');
+                        pageSections.forEach(section => section.classList.remove('active'));
+                        document.getElementById('page-home').classList.add('active');
+                        
+                        // 设置评分筛选条件
+                        document.getElementById('filter-rating').value = ratingRange;
+                        
+                        // 触发筛选
+                        document.getElementById('btn-filter').click();
+                        
+                        // 滚动到顶部
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                 }
             }
         });
+        // 添加鼠标悬停样式提示
+        ctx3.canvas.style.cursor = 'pointer';
     }
 
     // 国家/地区分布图表
     if (stats.country_distribution) {
         const ctx4 = document.getElementById('chart-country').getContext('2d');
-        new Chart(ctx4, {
+        const countryChart = new Chart(ctx4, {
             type: 'doughnut',
             data: {
                 labels: stats.country_distribution.map(d => d.country),
@@ -829,9 +950,36 @@ function renderCharts(stats) {
                     legend: {
                         position: 'right'
                     }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const countryName = stats.country_distribution[index].country;
+                        
+                        // 跳转到首页并设置筛选条件
+                        const navLinks = document.querySelectorAll('.nav-link');
+                        const pageSections = document.querySelectorAll('.page-section');
+                        
+                        // 切换到首页
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        document.querySelector('[data-page="home"]').classList.add('active');
+                        pageSections.forEach(section => section.classList.remove('active'));
+                        document.getElementById('page-home').classList.add('active');
+                        
+                        // 设置国家筛选条件
+                        document.getElementById('filter-country').value = countryName;
+                        
+                        // 触发筛选
+                        document.getElementById('btn-filter').click();
+                        
+                        // 滚动到顶部
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                 }
             }
         });
+        // 添加鼠标悬停样式提示
+        ctx4.canvas.style.cursor = 'pointer';
     }
 
     // 导演作品排行图表

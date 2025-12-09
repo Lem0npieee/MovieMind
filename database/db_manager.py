@@ -88,8 +88,9 @@ class DatabaseManager:
                 self.release_connection(conn)
     
     def get_movies(self, page: int = 1, per_page: int = 20, 
-                   genre: str = None, year_start: int = None, 
-                   year_end: int = None, min_rating: float = None) -> Tuple[List[Dict], int]:
+                   genre: str = None, country: str = None,
+                   year_start: int = None, year_end: int = None, 
+                   min_rating: float = None, max_rating: float = None) -> Tuple[List[Dict], int]:
         """
         获取电影列表（支持多条件筛选和分页）
         :return: (电影列表, 总数)
@@ -104,6 +105,10 @@ class DatabaseManager:
             conditions.append("EXISTS (SELECT 1 FROM movie_genre mg JOIN genre g ON mg.genre_id = g.genre_id WHERE mg.movie_id = m.movie_id AND g.name = %s)")
             params.append(genre)
         
+        if country:
+            conditions.append("m.countries LIKE %s")
+            params.append(f'%{country}%')
+        
         if year_start:
             conditions.append("m.year >= %s")
             params.append(year_start)
@@ -115,6 +120,10 @@ class DatabaseManager:
         if min_rating:
             conditions.append("m.rating >= %s")
             params.append(min_rating)
+        
+        if max_rating:
+            conditions.append("m.rating <= %s")
+            params.append(max_rating)
         
         where_clause = " AND ".join(conditions) if conditions else "1=1"
         
@@ -559,10 +568,11 @@ class DatabaseManager:
                     WHEN year < 2020 THEN '2010s'
                     ELSE '2020s'
                 END as decade,
+                MIN(year) as min_year,
                 COUNT(*) as count
             FROM movie
             GROUP BY decade
-            ORDER BY decade
+            ORDER BY min_year
         """
         stats['year_distribution'] = self.execute_query(year_query)
         
@@ -577,28 +587,28 @@ class DatabaseManager:
         """
         stats['genre_distribution'] = self.execute_query(genre_query)
         
-        # 评分分布 - 按0.3分区间
-        rating_query = """
-            SELECT rating
-            FROM movie
-            WHERE rating IS NOT NULL
-        """
-        rating_data = self.execute_query(rating_query)
-        
-        # 创建0.3分区间的直方图数据
-        bins = {}
-        for row in rating_data:
-            rating = float(row['rating'])  # 转换为float
-            # 计算所属区间 (例如 8.7 -> 8.7, 8.9 -> 8.7, 9.0 -> 9.0)
-            bin_start = (rating // 0.3) * 0.3
-            bin_key = f"{bin_start:.1f}-{bin_start + 0.3:.1f}"
-            bins[bin_key] = bins.get(bin_key, 0) + 1
-        
-        # 按区间排序
-        stats['rating_distribution'] = [
-            {'range': k, 'count': v}
-            for k, v in sorted(bins.items(), key=lambda x: float(x[0].split('-')[0]))
+        # 评分分布 - 固定4个区间
+        rating_ranges = [
+            ('8.4-8.7', 8.4, 8.7),
+            ('8.8-9.1', 8.8, 9.1),
+            ('9.2-9.4', 9.2, 9.4),
+            ('9.5-9.7', 9.5, 9.7)
         ]
+        
+        rating_distribution = []
+        for range_label, min_rating, max_rating in rating_ranges:
+            count_query = """
+                SELECT COUNT(*) as count
+                FROM movie
+                WHERE rating >= %s AND rating <= %s
+            """
+            result = self.execute_query(count_query, (min_rating, max_rating), fetch_one=True)
+            rating_distribution.append({
+                'range': range_label,
+                'count': result['count'] if result else 0
+            })
+        
+        stats['rating_distribution'] = rating_distribution
         
         # 国家/地区分布 - 在Python层面拆分
         country_query = """
