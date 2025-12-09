@@ -3,48 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户主页 - MovieMind</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            font-family: 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #0b1224);
-            color: #e8ecf5;
-        }
-        .card {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid #1f2a44;
-            border-radius: 16px;
-            padding: 32px;
-            width: min(520px, 94vw);
-            box-shadow: 0 16px 60px rgba(0,0,0,0.55);
-        }
-        h1 { margin-bottom: 8px; }
-        p { color: #9aa4b5; }
-        .btn {
-            margin-top: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: none;
-            background: #00d4aa;
-            color: #0b1224;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .btn:hover { box-shadow: 0 10px 30px rgba(0,212,170,0.35); }
-    </style>
+    <title>个人主页 - MovieMind</title>
+    <link rel="stylesheet" href="css/user_home.css">
 </head>
 <body>
-    <div class="card">
-        <h1>用户主页</h1>
-        <p>这里将展示你的收藏、评论、偏好等个性化内容。功能即将上线。</p>
-        <button class="btn" onclick="window.location.href='index.html'">返回首页</button>
-    </div>
+    <header class="header-bar">
+        <div class="brand-inline">🎬 MovieMind</div>
+        <div class="account-wrapper">
+            <button id="account-display" class="account-chip" aria-label="账户入口">
+                <span id="account-name">点击登录</span>
+                <span class="account-caret">▾</span>
+            </button>
+            <div id="account-dropdown" class="account-dropdown" aria-label="账户菜单">
+                <button class="dropdown-item" id="account-home">个人主页</button>
+                <button class="dropdown-item" id="account-logout">退出登录</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="hero-card">
+            <div>
+                <div class="user-name">
+                    <span id="uh-username">—</span>
+                </div>
+                <p id="uh-signature" class="item-sub">最近收藏与评价概览</p>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">收藏电影</div>
+                        <div class="stat-value" id="uh-fav-count">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">发表评论</div>
+                        <div class="stat-value" id="uh-review-count">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">最近活跃</div>
+                        <div class="stat-value" id="uh-last-active">—</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="fav-section">
+            <div class="section-header">
+                <div class="section-title">📌 收藏电影</div>
+                <button class="btn-link view-all" id="view-all-fav">查看全部收藏</button>
+            </div>
+            <div class="card-list" id="fav-list"></div>
+            <div class="empty" id="fav-empty" style="display:none;">暂无收藏，去电影详情页点“收藏”试试</div>
+        </section>
+
+        <section class="section" id="review-section">
+            <div class="section-header">
+                <div class="section-title">📝 历史评价</div>
+                <button class="btn-link view-all" id="view-all-review">查看全部评价</button>
+            </div>
+            <div class="card-list" id="review-list"></div>
+            <div class="empty" id="review-empty" style="display:none;">暂无评价，发表你的第一条观后感吧</div>
+        </section>
+    </main>
+
+    <script src="js/user_home.js"></script>
 </body>
 </html>

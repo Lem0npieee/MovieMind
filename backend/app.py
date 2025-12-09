@@ -232,6 +232,70 @@ def ai_recommend():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/favorites/status', methods=['GET'])
+def favorite_status():
+    try:
+        user_id = request.args.get('user_id', type=int)
+        movie_id = request.args.get('movie_id', type=int)
+        if not user_id or not movie_id:
+            return jsonify({'success': False, 'error': '缺少用户或电影信息'}), 400
+        is_fav = db_manager.is_favorite(user_id, movie_id)
+        return jsonify({'success': True, 'data': {'is_favorite': is_fav}})
+    except Exception as e:
+        logger.error(f"查询收藏状态失败: {str(e)}")
+        return jsonify({'success': False, 'error': '查询失败'}), 500
+
+
+@app.route('/api/favorites/<int:movie_id>', methods=['POST', 'DELETE'])
+def toggle_favorite(movie_id):
+    try:
+        # 仅在 POST（创建收藏）时尝试读取 JSON body，
+        # DELETE 请求应通过查询参数传递 user_id，避免因非 JSON Content-Type 报 415。
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            user_id = data.get('user_id')
+        else:
+            user_id = request.args.get('user_id', type=int)
+        if not user_id:
+            return jsonify({'success': False, 'error': '请先登录'}), 401
+
+        if request.method == 'POST':
+            fav = db_manager.add_favorite(user_id, movie_id)
+            return jsonify({'success': True, 'data': fav})
+        else:
+            db_manager.remove_favorite(user_id, movie_id)
+            return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"收藏操作失败: {str(e)}")
+        return jsonify({'success': False, 'error': '收藏操作失败'}), 500
+
+
+@app.route('/api/users/<int:user_id>/favorites', methods=['GET'])
+def list_user_favorites(user_id):
+    try:
+        limit = request.args.get('limit', 3, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        items = db_manager.get_user_favorites(user_id, limit=limit, offset=offset)
+        total = db_manager.count_user_favorites(user_id)
+        return jsonify({'success': True, 'data': items, 'total': total})
+    except Exception as e:
+        logger.error(f"获取收藏列表失败: {str(e)}")
+        return jsonify({'success': False, 'error': '获取收藏失败'}), 500
+
+
+@app.route('/api/users/<int:user_id>/reviews', methods=['GET'])
+def list_user_reviews(user_id):
+    try:
+        limit = request.args.get('limit', 3, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        items = db_manager.get_user_reviews(user_id, limit=limit, offset=offset)
+        total = db_manager.count_user_reviews(user_id)
+        return jsonify({'success': True, 'data': items, 'total': total})
+    except Exception as e:
+        logger.error(f"获取用户评论失败: {str(e)}")
+        return jsonify({'success': False, 'error': '获取评论失败'}), 500
+
+
 @app.route('/api/genres', methods=['GET'])
 def get_genres():
     """获取所有电影类型"""

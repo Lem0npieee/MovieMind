@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电影详情 - MovieMind</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/detail.css">
 </head>
 <body>
@@ -11,13 +12,21 @@
         <div class="nav-content">
             <a href="index.html" class="brand">🎬 MovieMind</a>
             <nav class="nav-actions">
-                <a href="index.html" class="back-link">返回首页</a>
-                <a href="index.html#page-home" class="link-muted">电影榜单</a>
-                <a href="index.html#page-recommend" class="link-muted">AI智能推荐</a>
-                <a href="index.html#page-search" class="link-muted">自然语言查询</a>
-                <a href="index.html#page-stats" class="link-muted">数据可视化</a>
-                <a href="index.html#page-auth" class="link-muted">账户</a>
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="index.html#page-recommend" class="nav-link">AI智能推荐</a>
+                <a href="index.html#page-search" class="nav-link">自然语言查询</a>
+                <a href="index.html#page-stats" class="nav-link">数据可视化看板</a>
             </nav>
+            <div class="account-wrapper">
+                <button id="account-display" class="account-chip" aria-label="账户入口">
+                    <span id="account-name">点击登录</span>
+                    <span class="account-caret">▾</span>
+                </button>
+                <div id="account-dropdown" class="account-dropdown" aria-label="账户菜单">
+                    <button class="dropdown-item" id="account-home">个人主页</button>
+                    <button class="dropdown-item" id="account-logout">退出登录</button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -33,10 +42,13 @@
                 <div class="poster-fallback" id="poster-fallback">暂无海报</div>
             </div>
             <div class="hero-content">
-                <div class="title-group">
-                    <div class="movie-rank" id="movie-rank"></div>
-                    <h1 id="movie-title" class="movie-title">加载中...</h1>
-                    <p id="movie-original-title" class="movie-subtitle"></p>
+                <div class="title-row">
+                    <div class="title-group">
+                        <div class="movie-rank" id="movie-rank"></div>
+                        <h1 id="movie-title" class="movie-title">加载中...</h1>
+                        <p id="movie-original-title" class="movie-subtitle"></p>
+                    </div>
+                    <button id="favorite-btn" class="btn ghost" aria-label="切换收藏">收藏</button>
                 </div>
                 <div class="meta-group">
                     <div class="meta-item">

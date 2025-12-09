@@ -28,6 +28,7 @@ const reviewSubmitBtn = document.getElementById('review-submit');
 const ratingStars = document.querySelectorAll('.rating-star-btn');
 const ratingHint = document.getElementById('review-rating-text');
 const ratingStarsGroup = document.getElementById('review-stars');
+const favoriteBtn = document.getElementById('favorite-btn');
 
 // 演员轮播相关变量
 let allCastMembers = [];
@@ -51,6 +52,10 @@ if (reviewForm) {
 }
 
 initRatingStars();
+
+if (favoriteBtn) {
+    favoriteBtn.addEventListener('click', toggleFavorite);
+}
 
 async function loadMovieDetail(id) {
     try {
@@ -103,6 +108,11 @@ function renderMovieDetail(movie) {
     renderPoster(movie.poster_url, movie.cn_title);
     renderCast(normalizeToArray(movie.directors), normalizeToArray(movie.actors));
     updateLinks(movie);
+
+    if (favoriteBtn) {
+        favoriteBtn.dataset.movieId = movie.movie_id;
+        updateFavoriteStatus();
+    }
 }
 
 function renderPoster(url, title) {
@@ -420,7 +430,8 @@ function loadUserFromStorage() {
 function updateReviewFormState() {
     if (!reviewNotice || !reviewSubmitBtn || !reviewRatingInput || !reviewContentInput) return;
     if (currentUser) {
-        reviewNotice.textContent = `以 ${currentUser.username} 的身份发表评论`;
+        // 不再显示“以 ... 的身份发表评论”行，保持简洁
+        reviewNotice.textContent = '';
         reviewSubmitBtn.disabled = false;
         reviewRatingInput.disabled = false;
         reviewContentInput.disabled = false;
@@ -467,6 +478,62 @@ function initRatingStars() {
         });
     });
     setReviewRating(0);
+}
+
+// ========== 收藏（收藏电影） ==========
+async function updateFavoriteStatus() {
+    if (!favoriteBtn) return;
+    const movieId = Number(favoriteBtn.dataset.movieId);
+    const user = loadUserFromStorage();
+    if (!movieId || !user) {
+        setFavoriteButtonState(false, !user);
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE_URL}/favorites/status?user_id=${user.user_id}&movie_id=${movieId}`);
+        const data = await res.json();
+        const isFav = res.ok && data.success && data.data?.is_favorite;
+        setFavoriteButtonState(!!isFav, false);
+    } catch (err) {
+        setFavoriteButtonState(false, false);
+    }
+}
+
+function setFavoriteButtonState(isFavorite, disabled) {
+    if (!favoriteBtn) return;
+    favoriteBtn.dataset.favorite = isFavorite ? '1' : '0';
+    favoriteBtn.textContent = isFavorite ? '已收藏' : '收藏';
+    favoriteBtn.disabled = !!disabled;
+    // 切换高亮样式（已收藏为黄色）
+    favoriteBtn.classList.toggle('favorited', isFavorite);
+    favoriteBtn.setAttribute('aria-pressed', isFavorite ? 'true' : 'false');
+}
+
+async function toggleFavorite() {
+    if (!favoriteBtn) return;
+    const movieId = Number(favoriteBtn.dataset.movieId);
+    const user = loadUserFromStorage();
+    if (!user) {
+        window.location.href = 'auth.html';
+        return;
+    }
+    const isFav = favoriteBtn.dataset.favorite === '1';
+    setFavoriteButtonState(isFav, true); // lock during request
+    try {
+        if (isFav) {
+            await fetch(`${API_BASE_URL}/favorites/${movieId}?user_id=${user.user_id}`, { method: 'DELETE' });
+        } else {
+            await fetch(`${API_BASE_URL}/favorites/${movieId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user.user_id })
+            });
+        }
+    } catch (err) {
+        // ignore error UI for now
+    } finally {
+        updateFavoriteStatus();
+    }
 }
 
 function setReviewRating(value) {
@@ -533,3 +600,53 @@ function applyTheme(theme) {
         if (icon) icon.textContent = '🌙';
     }
 }
+
+// ========== 账户显示 + 下拉 ==========
+const ACCOUNT_STORAGE_KEY = 'moviemind_user';
+const accountButton = document.getElementById('account-display');
+const accountNameEl = document.getElementById('account-name');
+const accountDropdown = document.getElementById('account-dropdown');
+const accountHomeBtn = document.getElementById('account-home');
+const accountLogoutBtn = document.getElementById('account-logout');
+
+function initAccountUI() {
+    if (!accountButton || !accountNameEl) return;
+    const user = loadUserFromStorage();
+    accountNameEl.textContent = user && user.username ? user.username : '点击登录';
+
+    const closeDropdown = () => accountDropdown && accountDropdown.classList.remove('open');
+
+    accountButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!loadUserFromStorage()) {
+            window.location.href = 'auth.html';
+            return;
+        }
+        if (accountDropdown) accountDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', closeDropdown);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDropdown();
+    });
+
+    if (accountHomeBtn) {
+        accountHomeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDropdown();
+            window.location.href = 'user_home.html';
+        });
+    }
+
+    if (accountLogoutBtn) {
+        accountLogoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDropdown();
+            try { localStorage.removeItem(ACCOUNT_STORAGE_KEY); } catch (err) {}
+            window.location.href = 'auth.html';
+        });
+    }
+}
+
+// initialize account UI after DOM ready
+document.addEventListener('DOMContentLoaded', initAccountUI);

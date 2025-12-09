@@ -173,6 +173,35 @@ body {
     margin-bottom: 0.2rem;
 }
 
+.title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+#favorite-btn {
+    align-self: flex-start;
+    min-width: 110px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+#favorite-btn:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 20px rgba(0,212,170,0.2);
+}
+
+/* 已收藏样式 — 黄色主题 */
+#favorite-btn.favorited {
+    background: linear-gradient(180deg, #ffd86b, #ffb84d);
+    color: #2b1a00;
+    border-color: rgba(255,183,77,0.9);
+    box-shadow: 0 8px 24px rgba(255,167,38,0.18);
+}
+
 .movie-subtitle {
     color: var(--muted-text);
     margin-bottom: 1rem;
@@ -217,19 +246,24 @@ body {
 }
 
 .rating {
-    font-size: 1.8rem;
+    display: flex;
+    flex-direction: column; /* stack score and count vertically */
+    align-items: flex-start; /* left-align the score and the count */
     font-weight: 700;
+    gap: 0.15rem;
 }
 
 .rating-score {
     color: var(--accent-gold);
     text-shadow: 0 0 10px rgba(255, 201, 71, 0.4);
+    font-size: 1.8rem;
+    line-height: 1;
 }
 
 .rating-count {
     font-size: 0.9rem;
     color: var(--muted-text);
-    margin-left: 0.4rem;
+    margin-left: 0; /* ensure no extra left offset */
 }
 
 .tag-group {
@@ -651,6 +685,9 @@ body {
     color: var(--text-color);
     margin-bottom: 0.6rem;
     white-space: pre-wrap;
+    /* 对长无空格字符串允许断行以避免溢出卡片 */
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .review-footer {
